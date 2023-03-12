@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <!-- Custom CSS -->
+  <!-- <link rel="stylesheet" href="styles.css"> -->
+  <title>Add ajax message</title>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row" style="background-color: #EBEBEB">
+      <div class="col-12" style="text-align:center">
+        <h1 style="font-weight:bold">Guestbook app</h1>
+      </div>
+    </div>
+    <div class="row" style="background-color: #EBEBEB">
+      <div class="col-3" style="border-bottom:3px solid #005792;">
+        <h2><a href="/">Front page</a></h2>
+      </div>
+      <div class="col-3" style="border-bottom:3px solid #005792;">
+        <h2><a href="/guestbook">View guestbook</a></h2>
+      </div>
+      <div class="col-3" style="border-bottom:3px solid #005792;">
+        <h2><a href="/newmessage">Add message</a></h2>
+    </div>
+    <div class="col-3" style="border-bottom:3px solid #005792;">
+        <h2><a href="/ajaxmessage">Add ajax message</a></h2>
+    </div>
+    </div>
+    <br>
+    <br>
+    <div class="row">
+      <div class="col-12">
+        <h3 style="font-weight:bold">Add ajax message</h3>
+        <form action="/ajaxmessage" id="form1">
+          User name <input type="text" name="username" id="username">
+          Country <input type="text" name="country" id="country">
+          Message <input type="text" name="message" id="message">
+          <input type="submit" value="Submit" onClick="return empty()">
+        </form>
+        <br>
+        <br>
+        <div id="myDiv">
+          <table id="table" border="1"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    var start = 0;
+    var biggest_id = 0;
+    /* attach a submit handler to the form */
+    $("#form1").submit(function (event) {
+
+      /* stop form from submitting normally */
+      event.preventDefault();
+
+      /* get some values from elements on the page: */
+      var $form = $(this),
+        term1 = $form.find('input[name="username"]').val(),
+        term2 = $form.find('input[name="country"]').val(),
+        term3 = $form.find('input[name="message"]').val(),
+        url = $form.attr('action');
+
+      /* Send the data using post */
+      var posting = $.post(url, {
+        username: term1,
+        country: term2,
+        message: term3
+      });
+
+      if (start === 0) {
+        $.getJSON("messages.json", function (data2) {
+          let out = '<tr style="font-weight:bold"> <td> ID </td> <td> User name </td> <td> Country </td> <td> Date </td> <td> Message </td> </tr>';
+          for (let i = 0; i < data2.length; i++) {
+            out += "<tr>"
+            out += "<td>" + data2[i].id + "</td>";
+            out += "<td>" + data2[i].username + "</td>";
+            out += "<td>" + data2[i].country + "</td>";
+            out += "<td>" + data2[i].date + "</td>";
+            out += "<td>" + data2[i].message + "</td>";
+            out += "</tr>"
+
+            if (biggest_id < parseInt(data2[i].id)) {
+              biggest_id = parseInt(data2[i].id);
+            }
+          }
+          posting.done(function (data) {
+            biggest_id += 1;
+            out += "<tr>";
+            out += "<td>" + biggest_id + "</td>";
+            out += "<td>" + term1 + "</td>";
+            out += "<td>" + term2 + "</td>";
+            out += "<td>" + new Date() + "</td>";
+            out += "<td>" + term3 + "</td>";
+            out += "</tr>"
+            $("#table").append(out);
+          });
+        });
+        start = 1;
+
+      } else {
+        posting.done(function (data) {
+          biggest_id += 1;
+          let out = "<tr>";
+          out += "<td>" + biggest_id + "</td>";
+          out += "<td>" + term1 + "</td>";
+          out += "<td>" + term2 + "</td>";
+          out += "<td>" + new Date() + "</td>";
+          out += "<td>" + term3 + "</td>";
+          out += "</tr>"
+          $("#table").append(out);
+        });
+      }
+    });
+
+    function empty() {
+      var x1 = document.getElementById("username").value;
+      var x2 = document.getElementById("country").value;
+      var x3 = document.getElementById("message").value;
+      if (x1 == "" || x2 == "" || x3 == "") {
+        alert("Fill all the fields!");
+        return false;
+      }
+      else {
+        alert("The message have been added!");
+      }
+    }
+
+  </script>
+</body>
+
+</html>
